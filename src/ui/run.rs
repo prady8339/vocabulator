@@ -3,7 +3,7 @@ use crossterm::event::{self, Event, KeyCode};
 
 use super::{
     app::App,
-    menu::render_menu,
+    screens::menu::render_menu,
     terminal::{init_terminal, restore_terminal},
 };
 

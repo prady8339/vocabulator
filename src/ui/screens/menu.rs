@@ -5,7 +5,7 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, ListState},
 };
 
-use super::app::App;
+use crate::ui::app::App;
 
 pub fn render_menu(f: &mut Frame, app: &App) {
     let chunks = Layout::default()
