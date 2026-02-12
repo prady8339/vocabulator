@@ -6,7 +6,6 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 use db::init_db;
 use seed::seed_from_file;
-use ui::terminal::{init_terminal, restore_terminal};
 
 #[derive(Parser)]
 #[command(name = "vocabulator")]
@@ -30,8 +29,7 @@ fn main() -> Result<()> {
             println!("Database seeded successfully.");
         }
         None => {
-            let term = init_terminal()?;
-            restore_terminal(term)?;
+            ui::run::run()?;
         }
     }
 
