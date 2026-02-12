@@ -1,5 +1,14 @@
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Screen {
+    Menu,
+    Practice,
+    Review,
+    Custom,
+}
+
 #[derive(Debug)]
 pub struct App {
+    pub current_screen: Screen,
     pub menu_items: Vec<&'static str>,
     pub selected: usize,
     pub should_quit: bool,
@@ -8,7 +17,14 @@ pub struct App {
 impl App {
     pub fn new() -> Self {
         Self {
-            menu_items: vec!["Start Practice", "Review Incorrect", "Exit"],
+            current_screen: Screen::Menu,
+            menu_items: vec![
+                "Continue (Group 1)",
+                "Practice Weak",
+                "Review Marks",
+                "Custom Query",
+                "Exit",
+            ],
             selected: 0,
             should_quit: false,
         }
@@ -27,8 +43,13 @@ impl App {
     }
 
     pub fn select(&mut self) {
-        if self.menu_items[self.selected] == "Exit" {
-            self.should_quit = true;
+        match self.selected {
+            0 => self.current_screen = Screen::Practice,
+            1 => self.current_screen = Screen::Practice,
+            2 => self.current_screen = Screen::Review,
+            3 => self.current_screen = Screen::Custom,
+            4 => self.should_quit = true,
+            _ => {}
         }
     }
 }
@@ -56,7 +77,7 @@ mod tests {
     #[test]
     fn test_exit_sets_flag() {
         let mut app = App::new();
-        app.selected = 2;
+        app.selected = 4;
         app.select();
         assert!(app.should_quit);
     }

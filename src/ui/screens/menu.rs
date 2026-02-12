@@ -7,7 +7,7 @@ use ratatui::{
 
 use crate::ui::app::App;
 
-pub fn render_menu(f: &mut Frame, app: &App) {
+pub fn render(f: &mut Frame, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Percentage(100)])

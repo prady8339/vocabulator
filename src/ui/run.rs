@@ -1,9 +1,10 @@
 use anyhow::Result;
 use crossterm::event::{self, Event, KeyCode};
 
+use crate::ui::screens::{custom, menu, practice, review};
+
 use super::{
-    app::App,
-    screens::menu::render_menu,
+    app::{App, Screen},
     terminal::{init_terminal, restore_terminal},
 };
 
@@ -12,7 +13,12 @@ pub fn run() -> Result<()> {
     let mut app = App::new();
 
     loop {
-        terminal.draw(|f| render_menu(f, &app))?;
+        terminal.draw(|f| match app.current_screen {
+            Screen::Menu => menu::render(f, &app),
+            Screen::Practice => practice::render(f, &app),
+            Screen::Review => review::render(f, &app),
+            Screen::Custom => custom::render(f, &app),
+        })?;
 
         if let Event::Key(key) = event::read()? {
             match key.code {
