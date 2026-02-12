@@ -1,16 +1,18 @@
 mod db;
 mod seed;
+mod ui;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use db::init_db;
 use seed::seed_from_file;
+use ui::terminal::{init_terminal, restore_terminal};
 
 #[derive(Parser)]
 #[command(name = "vocabulator")]
 struct Cli {
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 }
 
 #[derive(Subcommand)]
@@ -23,9 +25,13 @@ fn main() -> Result<()> {
     let conn = init_db("vocab.db")?;
 
     match cli.command {
-        Commands::Seed { file } => {
+        Some(Commands::Seed { file }) => {
             seed_from_file(&conn, &file)?;
             println!("Database seeded successfully.");
+        }
+        None => {
+            let term = init_terminal()?;
+            restore_terminal(term)?;
         }
     }
 
