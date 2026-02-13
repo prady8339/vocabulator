@@ -1,3 +1,4 @@
+mod core;
 mod db;
 mod seed;
 mod ui;

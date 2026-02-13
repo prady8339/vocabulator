@@ -1,3 +1,5 @@
+use crate::core::session::Session;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Screen {
     Menu,
@@ -11,6 +13,7 @@ pub struct App {
     pub menu_items: Vec<&'static str>,
     pub selected: usize,
     pub should_quit: bool,
+    pub session: Option<Session>,
 }
 
 impl App {
@@ -27,6 +30,7 @@ impl App {
             ],
             selected: 0,
             should_quit: false,
+            session: None,
         }
     }
 

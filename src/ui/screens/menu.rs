@@ -1,3 +1,6 @@
+use crate::core;
+use crate::ui::app::{App, Screen};
+use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout},
@@ -5,15 +8,25 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, ListState},
 };
 
-use crate::ui::app::App;
-use crossterm::event::{KeyCode, KeyEvent};
-
 pub fn handle_event(app: &mut App, key: KeyEvent) {
     match key.code {
-        KeyCode::Char('q') => app.should_quit = true,
+        KeyCode::Esc | KeyCode::Char('q') => app.should_quit = true,
         KeyCode::Down | KeyCode::Char('j') => app.next(),
         KeyCode::Up | KeyCode::Char('k') => app.previous(),
-        KeyCode::Enter => app.select(),
+        KeyCode::Enter => {
+            app.select();
+            match app.current_screen {
+                Screen::Practice => {
+                    let session = core::practice::start_session();
+                    app.session = Some(session);
+                }
+                Screen::Test => {
+                    let session = core::test::start_session();
+                    app.session = Some(session);
+                }
+                _ => {}
+            }
+        }
         _ => {}
     }
 }
