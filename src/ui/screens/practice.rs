@@ -23,8 +23,8 @@ pub fn render(frame: &mut Frame, app: &App) {
             Constraint::Length(3), // Header
             Constraint::Length(5), // Word
             Constraint::Length(5), // Definition
-            Constraint::Length(5), // Stats
-            Constraint::Length(7), // Actions
+            Constraint::Length(4), // Stats
+            Constraint::Length(5), // Actions
         ])
         .split(area);
 
@@ -106,8 +106,8 @@ pub fn render(frame: &mut Frame, app: &App) {
 
     // ───────── STATS ─────────
     let stats = Paragraph::new(format!(
-        "Last Seen: {}\nTimes Seen: {}\nSuccess Count: {}",
-        word.last_seen, word.times_seen, word.success_count
+        "Last Seen: {}\nAccuracy: {}/{}",
+        word.last_seen, word.success_count, word.times_seen
     ))
     .block(
         Block::default()
