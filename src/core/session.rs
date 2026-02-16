@@ -1,5 +1,6 @@
 use crate::db::models::Word;
 
+#[derive(Debug)]
 pub struct Session {
     pub words: Vec<Word>,
     pub index: usize,
