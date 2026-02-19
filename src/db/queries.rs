@@ -100,3 +100,43 @@ pub fn fetch_weak_words(conn: &Connection) -> Result<Vec<Word>> {
         .query_map([], map_word)?
         .collect::<Result<Vec<_>, _>>()?)
 }
+
+pub fn update_word_stats(conn: &Connection, word: &Word) -> Result<()> {
+    conn.execute(
+        "UPDATE words
+         SET marked=?1,
+             last_seen=?2,
+             times_seen=?3,
+             success_count=?4
+         WHERE id=?5",
+        params![
+            word.marked,
+            word.last_seen,
+            word.times_seen,
+            word.success_count,
+            word.id
+        ],
+    )?;
+
+    Ok(())
+}
+
+fn upsert_state(conn: &Connection, key: &str, value: i32) -> Result<()> {
+    conn.execute(
+        "INSERT INTO app_state(key,value)
+         VALUES(?1,?2)
+         ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+        params![key, value],
+    )?;
+    Ok(())
+}
+
+pub fn save_progress(conn: &Connection, progress: (Screen, i32, usize)) -> Result<()> {
+    let (screen, group_id, index) = progress;
+
+    upsert_state(conn, "mode", screen_to_int(screen))?;
+    upsert_state(conn, "group_id", group_id)?;
+    upsert_state(conn, "index", index as i32)?;
+
+    Ok(())
+}
