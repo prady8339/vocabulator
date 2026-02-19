@@ -140,3 +140,75 @@ pub fn save_progress(conn: &Connection, progress: (Screen, i32, usize)) -> Resul
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rusqlite::Connection;
+
+    fn setup() -> Connection {
+        let conn = Connection::open_in_memory().unwrap();
+
+        conn.execute_batch(
+            "
+            CREATE TABLE app_state(
+                key TEXT PRIMARY KEY,
+                value INTEGER
+            );
+
+            CREATE TABLE words(
+                id INTEGER PRIMARY KEY,
+                word TEXT,
+                definition TEXT,
+                group_id INTEGER,
+                marked INTEGER,
+                last_seen INTEGER,
+                times_seen INTEGER,
+                success_count INTEGER
+            );
+        ",
+        )
+        .unwrap();
+
+        conn
+    }
+
+    #[test]
+    fn test_save_and_fetch_progress() {
+        let conn = setup();
+
+        save_progress(&conn, (Screen::Test, 3, 7)).unwrap();
+        let (screen, group, idx) = fetch_progress(&conn).unwrap();
+
+        assert!(matches!(screen, Screen::Test));
+        assert_eq!(group, 3);
+        assert_eq!(idx, 7);
+    }
+
+    #[test]
+    fn test_update_word_stats() {
+        let conn = setup();
+
+        conn.execute("INSERT INTO words VALUES(1,'a','b',1,0,0,0,0)", [])
+            .unwrap();
+
+        let w = Word {
+            id: 1,
+            word: "a".into(),
+            definition: "b".into(),
+            group_id: 1,
+            marked: true,
+            last_seen: 10,
+            times_seen: 5,
+            success_count: 4,
+        };
+
+        update_word_stats(&conn, &w).unwrap();
+
+        let v: i32 = conn
+            .query_row("SELECT times_seen FROM words WHERE id=1", [], |r| r.get(0))
+            .unwrap();
+
+        assert_eq!(v, 5);
+    }
+}
