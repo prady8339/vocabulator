@@ -31,6 +31,7 @@ pub struct Session {
     pub index: usize,
 
     // UI state
+    pub session_type: Type,
     pub show_definition: bool,
     pub graded: Option<bool>,
     pub input_buffer: String,
@@ -38,10 +39,11 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn new(words: Vec<Word>, index: usize) -> Self {
+    pub fn new(words: Vec<Word>, index: usize, session_type: Type) -> Self {
         Self {
             words,
             index,
+            session_type,
             ..Default::default()
         }
     }
@@ -76,17 +78,17 @@ pub fn group_session(conn: &Connection) -> Result<(Session, Screen)> {
 
     let words = queries::fetch_words_by_group(&conn, group_id)?;
 
-    Ok((Session::new(words, index), screen))
+    Ok((Session::new(words, index, Type::Group), screen))
 }
 
 pub fn marks_session(conn: &Connection) -> Result<(Session, Screen)> {
     let words = queries::fetch_marked_words(&conn)?;
 
-    Ok((Session::new(words, 0), Screen::Practice))
+    Ok((Session::new(words, 0, Type::Marked), Screen::Practice))
 }
 
 pub fn weak_session(conn: &Connection) -> Result<(Session, Screen)> {
     let words = queries::fetch_weak_words(&conn)?;
 
-    Ok((Session::new(words, 0), Screen::Practice))
+    Ok((Session::new(words, 0, Type::Weak), Screen::Practice))
 }
