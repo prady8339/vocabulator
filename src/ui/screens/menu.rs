@@ -9,6 +9,7 @@ use ratatui::{
 };
 
 pub fn handle_event(app: &mut App, key: KeyEvent) {
+    app.error = None;
     match key.code {
         KeyCode::Esc | KeyCode::Char('q') => app.should_quit = true,
         KeyCode::Down | KeyCode::Char('j') => app.next(),
@@ -34,7 +35,7 @@ pub fn handle_event(app: &mut App, key: KeyEvent) {
 pub fn render(f: &mut Frame, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(100)])
+        .constraints([Constraint::Min(0), Constraint::Length(3)])
         .split(f.size());
 
     let items: Vec<ListItem> = app
@@ -53,4 +54,14 @@ pub fn render(f: &mut Frame, app: &App) {
         .repeat_highlight_symbol(true);
 
     f.render_stateful_widget(list, chunks[0], &mut state);
+
+    if let Some(err) = &app.error {
+        let error_block = Block::default().borders(Borders::ALL).title("Error");
+
+        let paragraph = ratatui::widgets::Paragraph::new(err.clone())
+            .block(error_block)
+            .style(Style::default().fg(ratatui::style::Color::Red));
+
+        f.render_widget(paragraph, chunks[1]);
+    }
 }
