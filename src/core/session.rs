@@ -1,10 +1,12 @@
 use crate::db::models::Word;
 use crate::db::queries;
 use crate::ui::app::Screen;
+use anyhow::Result;
 use rusqlite::Connection;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Default, Copy, Clone, PartialEq)]
 pub enum Type {
+    #[default]
     Group,
     Marked,
     Weak,
@@ -23,13 +25,12 @@ impl Type {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Session {
     pub words: Vec<Word>,
     pub index: usize,
 
     // UI state
-    pub sesison_type: Type,
     pub show_definition: bool,
     pub graded: Option<bool>,
     pub input_buffer: String,
@@ -37,6 +38,14 @@ pub struct Session {
 }
 
 impl Session {
+    pub fn new(words: Vec<Word>, index: usize) -> Self {
+        Self {
+            words,
+            index,
+            ..Default::default()
+        }
+    }
+
     pub fn current(&self) -> &Word {
         &self.words[self.index]
     }
@@ -53,21 +62,31 @@ impl Session {
     }
 }
 
-pub fn start_session(conn: &Connection, session_type: Type) -> anyhow::Result<(Session, Screen)> {
+pub fn start_session(conn: &Connection, session_type: Type) -> Result<(Session, Screen)> {
+    match session_type {
+        Type::Group => group_session(&conn),
+        Type::Marked => marks_session(&conn),
+        Type::Weak => weak_session(&conn),
+        Type::Custom => anyhow::bail!("Custom session requires query input"),
+    }
+}
+
+pub fn group_session(conn: &Connection) -> Result<(Session, Screen)> {
     let (screen, group_id, index) = queries::fetch_progress(conn)?;
 
-    let words = queries::fetch_words_by_group(conn, group_id)?;
+    let words = queries::fetch_words_by_group(&conn, group_id)?;
 
-    Ok((
-        Session {
-            words,
-            index,
-            sesison_type: Type::Group,
-            show_definition: false,
-            graded: None,
-            input_buffer: String::new(),
-            insert_mode: false,
-        },
-        screen,
-    ))
+    Ok((Session::new(words, index), screen))
+}
+
+pub fn marks_session(conn: &Connection) -> Result<(Session, Screen)> {
+    let words = queries::fetch_marked_words(&conn)?;
+
+    Ok((Session::new(words, 0), Screen::Practice))
+}
+
+pub fn weak_session(conn: &Connection) -> Result<(Session, Screen)> {
+    let words = queries::fetch_weak_words(&conn)?;
+
+    Ok((Session::new(words, 0), Screen::Practice))
 }
