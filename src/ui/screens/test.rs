@@ -1,4 +1,4 @@
-use crate::core::utils;
+use crate::core::{actions, utils};
 use crate::ui::app::{App, Screen};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
@@ -19,42 +19,36 @@ pub fn handle_event(app: &mut App, key: KeyEvent) {
             app.session = None;
             app.current_screen = Screen::Menu;
         }
-
         KeyCode::Char('i') if !session.insert_mode => {
             session.insert_mode = true;
         }
-
         KeyCode::Esc if session.insert_mode => {
             session.insert_mode = false;
         }
-
         KeyCode::Char(c) if session.insert_mode => {
             session.input_buffer.push(c);
         }
-
         KeyCode::Backspace if session.insert_mode => {
             session.input_buffer.pop();
         }
-
         KeyCode::Char('m') => {
             let word = session.current_mut();
             word.marked = !word.marked;
         }
-
         KeyCode::Enter => {
             if session.graded.is_none() {
                 let word = session.current();
                 let correct = session.input_buffer.trim().eq_ignore_ascii_case(&word.word);
                 session.graded = Some(correct);
+                session.show_definition = true;
                 session.insert_mode = false;
             } else {
-                if session.index + 1 < session.words.len() {
-                    session.index += 1;
-                    session.reset_ui_state();
+                if let Err(e) = actions::handle_enter(app) {
+                    app.error = Some(e.to_string());
+                    app.current_screen = Screen::Menu;
                 }
             }
         }
-
         _ => {}
     }
 }
