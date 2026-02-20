@@ -10,6 +10,7 @@ pub enum Type {
     Group,
     Marked,
     Weak,
+    #[allow(dead_code)]
     Custom,
 }
 

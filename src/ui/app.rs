@@ -43,7 +43,6 @@ impl App {
                 MenuAction::Session(Type::Group),
                 MenuAction::Session(Type::Marked),
                 MenuAction::Session(Type::Weak),
-                MenuAction::Session(Type::Custom),
                 MenuAction::Exit,
             ],
             selected: 0,
